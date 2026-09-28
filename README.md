@@ -44,6 +44,10 @@ npm run check      # tests, then build
 
 The live site is https://rex.swikrut.com (GitHub Pages, DNS on Cloudflare). If the address ever changes, update `og:image`, `og:url` and the canonical link in `index.html`.
 
+## Privacy
+
+The live site counts visits and a few anonymous game events (runs, scores, trophies) with [Umami](https://umami.is). It uses no cookies and collects no personal data. Nothing is sent when you play from disk or run it locally.
+
 ## Credits
 
 Inspired by the offline dinosaur game in Google Chrome. All models, art and sounds in this project are original.

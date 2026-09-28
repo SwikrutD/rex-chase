@@ -4,6 +4,14 @@
 
 export const REX_X = -11;
 
+// Umami analytics. It only runs on these hostnames, so local testing never skews the numbers.
+// Set websiteId to '' to switch analytics off entirely.
+export const ANALYTICS = {
+  src: 'https://cloud.umami.is/script.js',
+  websiteId: 'f059eae2-984a-4879-9e47-9cb3fc253e00',
+  domains: ['rex.swikrut.com'],
+};
+
 // Camera framing. These set where the dino appears on screen; REX_X only
 // moves it in world space (the camera follows), so tune these instead.
 export const CAMERA = {

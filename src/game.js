@@ -18,6 +18,7 @@ import { Particles } from './fx/particles.js';
 import { sfx, unlockAudio, setMuted } from './audio.js';
 import { load, save } from './storage.js';
 import { EggDetector, ACHIEVEMENTS } from './eastereggs.js';
+import { track, scoreBand } from './analytics.js';
 
 const RIVAL_Z = -1.6;
 const SLEEP_AFTER = 20;
@@ -271,6 +272,7 @@ export class Game {
     sfx.achievement();
     this.hud.toast(a.name, a.desc, 'trophy', 3.2);
     this.hud.renderTrophies(this.data.achievements);
+    track('trophy', { id, name: a.name, secret: !!a.secret, total: Object.keys(this.data.achievements).length });
   }
 
   // ------------------------------------------------------------ states
@@ -300,6 +302,7 @@ export class Game {
     this.hud.setMeter(0, stats.bonesForRoar, true);
     if (this.preview) this.preview.exiting = true;
     this.data.stats.runs++;
+    track('run-start', { species: this.data.species, rival: this.data.caveman, golden: !!this.data.golden, hatchling: !!this.data.baby, retro: !!this.data.retro, run: this.data.stats.runs });
     this.unlock('first');
     if (!navigator.onLine) this.goneOffline();
     sfx.jump();
@@ -330,7 +333,7 @@ export class Game {
     this.setState('title');
   }
 
-  die() {
+  die(cause = 'unknown') {
     const r = this.r;
     this.dino.knockOut();
     sfx.die();
@@ -341,6 +344,10 @@ export class Game {
     best[this.data.species] = Math.max(best[this.data.species] || 0, r.score);
     if (SPECIES_ORDER.every((s) => (best[s] || 0) >= 500)) this.unlock('allthree');
     this.save();
+    track('run-end', {
+      species: this.data.species, rival: this.data.caveman, score: r.score, band: scoreBand(r.score), cause,
+      seconds: Math.round(r.time), catches: r.catches, bones: r.bonesTaken, newBest: r.newBest,
+    });
     this.setState('dead');
   }
 
@@ -625,6 +632,7 @@ export class Game {
         r.catches++;
         if (r.catches >= 3) this.unlock('chomper');
         this.unlock('lunch');
+        track('caveman-caught', { species: this.data.species, rival: this.data.caveman, score: r.score, catchInRun: r.catches });
         r.caveNext = r.score + CAVEMAN.gapMin + this.rng() * CAVEMAN.gapRand;
       }
     } else {
@@ -750,7 +758,7 @@ export class Game {
       } else {
         o.group.position.set(o.x, o.y, 0);
       }
-      if (o.solid && overlaps(me, shrink(o, HIT_FORGIVE))) { this.die(); return; }
+      if (o.solid && overlaps(me, shrink(o, HIT_FORGIVE))) { this.die(o.kind === 'proj' ? `thrown-${this.data.caveman}` : o.kind); return; }
       // Touched the unforgiving box but not the real one: a near miss.
       if (o.solid && !o.grazed && overlaps(raw, o)) o.grazed = true;
       if (!o.passed && o.x + o.w < me.x) {

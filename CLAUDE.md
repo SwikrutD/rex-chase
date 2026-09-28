@@ -36,6 +36,7 @@ src/
                         and "roar" during a run (as does Shift; R is deliberately unbound)
   audio.js              WebAudio synth; every sound is generated in code
   storage.js            guarded localStorage (hi score, choices, trophies)
+  analytics.js          Umami loader and track(); no-op off the live domain
   eastereggs.js         achievement list and key-sequence detector
   logic/                PURE modules with no Three.js; these are what the tests cover
     physics.js          jump integration and analytic jump helpers
@@ -68,7 +69,7 @@ tests/                  vitest specs
 1. **Every spawn must be beatable by the selected species.** `nextObstacle()` shrinks cactus groups until `clearable()` passes, and pterodactyls must be clearable, duckable or passable underneath. The `fairness` test runs a perfect-timing bot with all three species to 8000 points on three seeds. If you touch jump stats, obstacle sizes, speeds or gaps, run `npm test` and keep that test green. Do not loosen the test to make it pass.
 2. **Keep logic/ free of Three.js and the DOM** so it stays unit-testable in Node.
 3. **Nothing may hide the lane.** Anything between the camera and z = 0 must stay pebble-sized.
-4. **Offline first.** No CDN links, remote fonts or fetches. The Press Start 2P font comes from `@fontsource` and is inlined by the build.
+4. **Offline first.** No CDN links, remote fonts or fetches. The Press Start 2P font comes from `@fontsource` and is inlined by the build. The one exception is the Umami analytics script, which is optional: it loads asynchronously, only on `rex.swikrut.com`, and the game never waits on it or depends on it.
 5. **Storage is best effort.** Every localStorage access goes through `storage.js`, which swallows errors.
 6. **Caveman throws stay planned slots.** Never spawn a projectile outside `nextObstacle()`; that is what made throws both rare and risky before.
 7. **Original art only.** The game is inspired by Chrome's offline dinosaur, but the icons, favicon and billboard use its own roaring-rex mark. Do not copy Google's sprite or other third-party artwork into the project.
@@ -154,3 +155,21 @@ Other touches: the background fossil ribcage, the moon cycling through phases ea
 ## Key bindings and typed eggs
 
 Typed easter eggs (`offline`, `egg`) must only use letters with no action bound: W A S D P M H T are taken on the title screen. The Konami code ends in A, which also means "previous dinosaur", so `onEgg('konami')` calls `input.cancelLast('left')`; key listeners run after the action is queued so that cancel works.
+
+## Analytics
+
+Anonymous, cookieless analytics through Umami Cloud (dashboard at cloud.umami.is). Settings are in `ANALYTICS` in `config.js`; set `websiteId` to `''` to switch it off.
+
+- **Where it runs:** only when the page is served from a hostname in `ANALYTICS.domains` (`rex.swikrut.com`). The dev server, `npm run preview`, other hosts and the double-clicked `dist/index.html` load nothing and send nothing.
+- **Failure mode:** the script loads with `defer`; `track()` checks for `window.umami` and swallows errors, so ad blockers or no connection change nothing for the player.
+- **Privacy:** no cookies, no player IDs and nothing the player types. Keep it that way; in particular never send the typed easter-egg buffer.
+
+| Event | When | Fields |
+| --- | --- | --- |
+| (page view) | Automatic on load | Umami defaults: page, referrer, country, device |
+| `run-start` | A run begins | `species`, `rival`, `golden`, `hatchling`, `retro`, `run` (this browser's run count) |
+| `run-end` | The dino is knocked out | `species`, `rival`, `score`, `band` (score range from `scoreBand()`), `cause` (`cactusS`, `cactusL`, `ptero`, `crater` or `thrown-<rival>`), `seconds`, `catches`, `bones`, `newBest` |
+| `caveman-caught` | The dino catches the caveman | `species`, `rival`, `score`, `catchInRun` |
+| `trophy` | A trophy unlocks for the first time in this browser | `id`, `name`, `secret`, `total` (trophies this browser now has) |
+
+To add an event, call `track('name', { ...fields })` from `game.js` (names up to 50 characters, flat fields only) and add a row to the table above.

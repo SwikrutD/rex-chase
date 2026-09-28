@@ -3,6 +3,7 @@ import './ui/style.css';
 import { Game } from './game.js';
 import { Hud } from './ui/hud.js';
 import { Input } from './input.js';
+import { initAnalytics } from './analytics.js';
 
 function hasWebGL() {
   try {
@@ -36,6 +37,8 @@ if (!hasWebGL()) {
     showFatal('The game could not start', String(err && err.message ? err.message : err));
   }
 }
+
+initAnalytics();
 
 // Installable and playable offline once visited. Only over http(s): a service
 // worker cannot run from a file opened straight from disk.
