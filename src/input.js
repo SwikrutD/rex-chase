@@ -1,16 +1,21 @@
 // Keyboard and touch input. Held state is polled; presses are queued as
 // named actions. Raw keys also go to listeners for the easter egg detector.
 
+// Arrows and WASD mirror each other. What an action does depends on the
+// screen: on the title, left/right pick the dinosaur and up/down the rival;
+// during a run, up jumps, down ducks and right roars (as do R and Shift).
 const ACTIONS = {
-  Space: 'jump', ArrowUp: 'up', KeyW: 'jump',
+  Space: 'jump',
+  ArrowUp: 'up', KeyW: 'up',
   ArrowDown: 'duck', KeyS: 'duck',
+  ArrowLeft: 'left', KeyA: 'left',
+  ArrowRight: 'right', KeyD: 'right',
   KeyR: 'roar', ShiftLeft: 'roar', ShiftRight: 'roar',
   KeyP: 'pause', Escape: 'pause',
   KeyM: 'mute',
   KeyH: 'trophies',
-  KeyA: 'arms',
+  KeyT: 'arms',
   Enter: 'start',
-  ArrowLeft: 'left', ArrowRight: 'right',
 };
 
 export class Input {
@@ -25,12 +30,14 @@ export class Input {
       this.gesture();
       const a = ACTIONS[e.code];
       if (a) e.preventDefault();
+      if (!e.repeat) {
+        if (a === 'jump' || a === 'up') this.held.jump = true;
+        if (a === 'duck') this.held.duck = true;
+        if (a) this.queue.push(a);
+        if (a === 'duck') this.queue.push('down');
+      }
+      // After queueing, so a cheat code can cancel the action its last key queued.
       this.keyListeners.forEach((f) => f(e.key, e.code));
-      if (e.repeat) return;
-      if (a === 'jump' || a === 'up') this.held.jump = true;
-      if (a === 'duck') this.held.duck = true;
-      if (a) this.queue.push(a);
-      if (e.code === 'ArrowDown') this.queue.push('down');
     });
     window.addEventListener('keyup', (e) => {
       const a = ACTIONS[e.code];
@@ -76,5 +83,10 @@ export class Input {
   onFirstGesture(f) { this.firstGesture.push(f); }
   onKey(f) { this.keyListeners.push(f); }
   push(action) { this.queue.push(action); }
+  /** Drop the most recent queued copy of an action (used when a key press turns out to be part of a cheat code). */
+  cancelLast(action) {
+    const i = this.queue.lastIndexOf(action);
+    if (i >= 0) this.queue.splice(i, 1);
+  }
   drain() { const q = this.queue; this.queue = []; return q; }
 }

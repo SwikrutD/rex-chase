@@ -1,4 +1,4 @@
-# Rex Chase: Offline
+# Rex Chase
 
 A 3D take on Chrome's no-internet dinosaur game, built with Three.js and Vite. It keeps the original's side-on jump-and-duck loop and its 100-point chime. The day/night swap and moon phases carry over too. On top of that it adds three playable species, a caveman rival with three skins, a bone-powered roar, meteor showers and a pile of easter eggs. Everything in the game is procedural: no model files, no image files and no audio files. The only images are the app icons and the share preview in `public/`.
 
@@ -31,7 +31,9 @@ src/
                         exposes window.__game in dev
   config.js             ALL tuning numbers: speeds, species stats, event scores, sizes
   game.js               state machine, spawning, collisions, roar, rival, events, camera
-  input.js              keyboard and touch -> held state + queued actions
+  input.js              keyboard and touch -> held state + queued actions. Arrows and WASD
+                        mirror each other; right/D means "next dinosaur" on the title
+                        and "roar" during a run (as do R and Shift)
   audio.js              WebAudio synth; every sound is generated in code
   storage.js            guarded localStorage (hi score, choices, trophies)
   eastereggs.js         achievement list and key-sequence detector
@@ -112,6 +114,10 @@ The dev server can also be screenshot-tested headless with Playwright. Software 
 - P pauses, M mutes and H opens trophies. Switching tabs auto-pauses.
 - After a deploy: `npm run preview` or the live site loads, then reloads with the network off (the service worker serves it).
 
+## Trophies
+
+19 in total, 10 of them secret (listed in `ACHIEVEMENTS` in `eastereggs.js`). The skill trophies without an easter egg are: Hello Offline World, Four Digits, Use Your Words, Lunch Break, Look Up, Paleontologist, plus Close Shave (clear an obstacle while touching its unforgiving hitbox; tracked with `o.grazed`), Serial Chomper (three caveman catches in one run) and Bone Dry (2000 points with no bones collected).
+
 ## Easter eggs (spoilers)
 
 | Trigger | Effect | Trophy |
@@ -119,11 +125,13 @@ The dev server can also be screenshot-tested headless with Playwright. Software 
 | Konami code on the title screen (up up down down left right left right B A) | Toggles a gold skin on every species | Solid Gold |
 | Type `offline` on the title screen or while paused | Toggles retro mode: low-res, pixelated and greyscale like the original, with a dial-up noise | Pixel Purist |
 | Actually go offline | A "No internet" billboard with the game's rex mark appears in the background. On the deployed site the game still loads offline thanks to the service worker | Truly Disconnected |
-| Press A ten times | The dino flails its tiny arms | Tiny Arms |
+| Press T ten times | The dino flails its tiny arms (T for tiny; A is now a movement key) | Tiny Arms |
 | Leave the title screen for 20 s | The dino falls asleep with floating Zs and yawns when woken | Nap Time |
 | Score around 400 | A cactus with a "404" sign spawns | Not Found (clear it) |
 | A pterodactyl carrying a Wi-Fi router (1 in 6) | Roar at it | Reconnected |
 | Reach 6600 (66 million years) | A giant meteor hits the horizon. You get a whiteout, +660 points and a party hat | K-Pg Survivor |
+| Type `egg` on the title screen | A hatchling of your species pops out and runs beside you for good, copying your jumps a beat late. Type it again to put it to bed. Cosmetic only (`BABY` in config.js) | Proud Parent |
+| Pause at night and wait 5 s | The pause text fades and the camera tilts up to a constellation traced from the game's rex mark (`STARGAZE` in config.js) | Stargazer |
 
 Other touches: the background fossil ribcage, the moon cycling through phases each night like the original, the triceratops shaking the camera when it lands and the X eyes on a knockout.
 
@@ -139,6 +147,10 @@ Other touches: the background fossil ribcage, the moon cycling through phases ea
 
 - **Netlify, Vercel or Cloudflare Pages:** build command `npm run build`, output directory `dist`, Node 20 or newer.
 - **GitHub Pages or your own server:** upload the contents of `dist/`.
-- After the first deploy, change `og:image` in `index.html` to the absolute URL of `og-image.png`, because most link-preview crawlers ignore relative image URLs.
+- **Live site:** https://rex.swikrut.com, deployed by `.github/workflows/deploy.yml` to GitHub Pages on every push to `main`. DNS is a Cloudflare CNAME `rex` -> `swikrutd.github.io`, set to DNS only (grey cloud). `og:image`, `og:url` and the canonical link in `index.html` use absolute URLs on that domain, because most link-preview crawlers ignore relative image URLs; update them if the domain changes.
 - The service worker is network first, so players get new deploys on their next online load. Each build stamps a new cache name, and old caches are cleared on activation.
 - Serve over HTTPS; service workers and install prompts do not run on plain HTTP (localhost excepted).
+
+## Key bindings and typed eggs
+
+Typed easter eggs (`offline`, `egg`) must only use letters with no action bound: W A S D R P M H T are taken on the title screen. The Konami code ends in A, which also means "previous dinosaur", so `onEgg('konami')` calls `input.cancelLast('left')`; key listeners run after the action is queued so that cancel works.

@@ -1,5 +1,6 @@
 // localStorage wrapper. Every call is guarded so a private window or blocked
 // storage never breaks the game; it just forgets between sessions.
+// Keep this key as is: renaming it would wipe every player's saved scores and trophies.
 const KEY = 'rex-chase-offline:v1';
 
 const DEFAULTS = {
@@ -8,6 +9,7 @@ const DEFAULTS = {
   caveman: 'classic',
   muted: false,
   golden: false,
+  baby: false,
   retro: false,
   achievements: {},
   stats: { runs: 0, catches: 0, roars: 0 },

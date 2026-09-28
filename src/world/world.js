@@ -163,6 +163,7 @@ export class World {
     }));
     stars.frustumCulled = false;
     scene.add(stars);
+    this.buildConstellation();
 
     // Lights
     this.hemi = new THREE.HemisphereLight(DAY.hemiSky.clone(), DAY.hemiGround.clone(), DAY.hemi);
@@ -343,6 +344,38 @@ export class World {
   }
 
   setOffline(on) { this.offlineSign.visible = on; }
+
+  /**
+   * A constellation traced from the game's roaring-rex mark (the same points
+   * as the app icon), high in the sky where only the stargazer egg looks.
+   */
+  buildConstellation() {
+    const P = [
+      [22, 30], [60, 20], [84, 27], [90, 40], [62, 45], [40, 49], [30, 62], [22, 58], // skull
+      [40, 53], [82, 60], [77, 69], [45, 69], // jaw
+      [38, 90], [10, 90], [12, 64], // neck
+      [53, 31], // eye
+    ];
+    const at = ([x, y]) => new THREE.Vector3((x - 50) * 1.4, 240 + (50 - y) * 1.4, -350);
+    const edges = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0], [8, 9], [9, 10], [10, 11], [11, 6], [6, 12], [12, 13], [13, 14], [14, 7]];
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(edges.flatMap(([a, b]) => [at(P[a]), at(P[b])]));
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xa9bcff, transparent: true, opacity: 0, fog: false, depthWrite: false });
+    const starGeo = new THREE.BufferGeometry().setFromPoints(P.map(at));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 4, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false });
+    const g = new THREE.Group();
+    g.add(new THREE.LineSegments(lineGeo, lineMat), new THREE.Points(starGeo, starMat));
+    g.visible = false;
+    g.renderOrder = 2;
+    this.scene.add(g);
+    this.constellation = { g, lineMat, starMat };
+  }
+
+  setConstellation(k) {
+    const c = this.constellation;
+    c.g.visible = k > 0.005;
+    c.lineMat.opacity = 0.55 * k;
+    c.starMat.opacity = k;
+  }
 
   /** Start one visual meteor. big = the extinction meteor. */
   launchMeteor(big = false) {

@@ -203,3 +203,7 @@ button:focus-visible { outline: 3px solid var(--roar); outline-offset: 3px; }
 .fatal { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding-inline: 24px; text-align: center; background: var(--paper); color: var(--ink); }
 .fatal strong { font: 16px/1.5 var(--pixel); }
 .fatal p { margin: 0; max-width: 46ch; color: var(--ink-soft); }
+
+/* Stargazer easter egg: the pause text steps aside so the sky is visible. */
+#pause { transition: opacity 1.2s ease; }
+#pause.gazing { opacity: 0.12; }

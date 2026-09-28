@@ -2,7 +2,7 @@
 // first visit. Network first, so a new deploy shows up on the next online load;
 // the cache is only used when the network fails.
 // The build stamps the cache name with a timestamp so old caches get cleared.
-const CACHE = 'rex-chase-mulguf8n';
+const CACHE = 'rex-chase-mulk9hi4';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

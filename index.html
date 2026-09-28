@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#2b2233" />
-    <title>Rex Chase: Offline</title>
+    <title>Rex Chase</title>
     <meta name="description" content="A 3D take on the no-internet dinosaur game. Pick a T-rex, raptor or triceratops, chase a caveman, survive meteor showers and find the secrets." />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Rex Chase: Offline" />
+    <meta property="og:title" content="Rex Chase" />
     <meta property="og:description" content="A 3D take on the no-internet dinosaur game. Three species, a caveman rival, meteor showers and plenty of secrets." />
-    <meta property="og:image" content="og-image.png" />
+    <meta property="og:image" content="https://rex.swikrut.com/og-image.png" />
+    <meta property="og:url" content="https://rex.swikrut.com/" />
+    <link rel="canonical" href="https://rex.swikrut.com/" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -32,7 +34,7 @@
 
       <div class="meter" id="meter" hidden>
         <div class="pips" id="pips"></div>
-        <span class="meter-label">ROAR <kbd>R</kbd></span>
+        <span class="meter-label">ROAR <kbd>R</kbd><kbd>D</kbd><kbd>&#9654;</kbd></span>
       </div>
 
       <div id="toasts" aria-live="polite"></div>
@@ -46,7 +48,7 @@
           <div class="picker">
             <button class="arrow" id="spPrev" aria-label="Previous dinosaur">&#9664;</button>
             <div class="picker-body">
-              <span class="eyebrow">Dinosaur <kbd>&larr;</kbd><kbd>&rarr;</kbd></span>
+              <span class="eyebrow">Dinosaur <kbd>A</kbd><kbd>D</kbd></span>
               <strong id="spName">Tyrannosaurus</strong>
               <p id="spBlurb"></p>
               <dl class="bars" id="spBars"></dl>
@@ -57,7 +59,7 @@
           <div class="picker small">
             <button class="arrow" id="cvPrev" aria-label="Previous caveman">&#9664;</button>
             <div class="picker-body">
-              <span class="eyebrow">Rival <kbd>&uarr;</kbd><kbd>&darr;</kbd></span>
+              <span class="eyebrow">Rival <kbd>W</kbd><kbd>S</kbd></span>
               <strong id="cvName">Classic Grog</strong>
             </div>
             <button class="arrow" id="cvNext" aria-label="Next caveman">&#9654;</button>
@@ -66,9 +68,9 @@
           <button class="start" id="btnStart">Press <kbd>Space</kbd> to run</button>
 
           <ul class="keys">
-            <li><kbd>Space</kbd><kbd>&uarr;</kbd> jump, hold for height</li>
-            <li><kbd>&darr;</kbd> duck, or fast-fall in the air</li>
-            <li><kbd>R</kbd> roar when the bone meter is full</li>
+            <li><kbd>Space</kbd><kbd>W</kbd><kbd>&uarr;</kbd> jump, hold for height</li>
+            <li><kbd>S</kbd><kbd>&darr;</kbd> duck, or fast-fall in the air</li>
+            <li><kbd>D</kbd><kbd>&#9654;</kbd><kbd>R</kbd> roar when the bone meter is full</li>
             <li><kbd>P</kbd> pause <kbd>M</kbd> mute <kbd>H</kbd> trophies</li>
           </ul>
           <div class="title-foot">

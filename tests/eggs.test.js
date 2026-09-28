@@ -19,3 +19,20 @@ describe('easter eggs', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
+
+describe('new eggs and trophies', () => {
+  it('detects "egg"', () => {
+    const hits = [];
+    const d = new EggDetector((n) => hits.push(n));
+    [...'eGg'].forEach((k) => d.feed(k));
+    expect(hits).toEqual(['egg']);
+  });
+  it('has 19 trophies, 10 secret', () => {
+    expect(ACHIEVEMENTS.length).toBe(19);
+    expect(ACHIEVEMENTS.filter((a) => a.secret).length).toBe(10);
+  });
+  it('typed eggs avoid letters bound to actions', () => {
+    const bound = new Set([...'wasdrpmht']);
+    for (const word of ['offline', 'egg']) for (const ch of word) expect(bound.has(ch)).toBe(false);
+  });
+});

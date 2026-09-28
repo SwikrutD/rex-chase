@@ -1,6 +1,6 @@
-# Rex Chase: Offline
+# Rex Chase
 
-A 3D take on the no-internet dinosaur game. Pick a T-rex, a velociraptor or a triceratops, outrun cacti and pterodactyls, chase down a caveman who throws things back and survive the meteor showers. There are 14 trophies, and 8 of them are secret.
+A 3D take on the no-internet dinosaur game. Pick a T-rex, a velociraptor or a triceratops, outrun cacti and pterodactyls, chase down a caveman who throws things back and survive the meteor showers. There are 19 trophies, and 10 of them are secret.
 
 Built with Three.js and Vite. Every model and sound is generated in code, and once it has loaded it plays with no internet connection.
 
@@ -11,11 +11,11 @@ Built with Three.js and Vite. Every model and sound is generated in code, and on
 
 | Key | Action |
 | --- | --- |
-| Space or Up | Jump (hold for a higher jump) |
-| Down | Duck, or fast-fall in the air |
-| R | Roar when the bone meter is full |
-| Left and Right | Choose a dinosaur on the title screen |
-| Up and Down | Choose the caveman's outfit on the title screen |
+| Space, W or Up | Jump (hold for a higher jump) |
+| S or Down | Duck, or fast-fall in the air |
+| R, D or Right | Roar when the bone meter is full |
+| A/D or Left/Right | Choose a dinosaur on the title screen |
+| W/S or Up/Down | Choose the caveman's outfit on the title screen |
 | P or Esc | Pause |
 | M | Mute |
 | H | Trophies |
@@ -42,7 +42,7 @@ npm run check      # tests, then build
 - **Netlify, Vercel or Cloudflare Pages:** build command `npm run build`, output directory `dist`.
 - **GitHub Pages or any web server:** upload the contents of `dist/`.
 
-After the first deploy, set the `og:image` tag in `index.html` to the full URL of `og-image.png` so link previews show the picture.
+The live site is https://rex.swikrut.com (GitHub Pages, DNS on Cloudflare). If the address ever changes, update `og:image`, `og:url` and the canonical link in `index.html`.
 
 ## Credits
 

@@ -121,6 +121,13 @@ export const SPECIES = {
 
 export const SPECIES_ORDER = ['rex', 'raptor', 'trike'];
 
+// The hatchling easter egg: size and where it runs relative to the dino.
+// dx is behind the dino during a run; titleDx puts it beside the dino on the title screen.
+export const BABY = { scale: 0.45, dx: -5.8, titleDx: 2.6, z: 1.6, lag: 10 };
+
+// The stargazer easter egg: pause at night for this long and the camera looks up.
+export const STARGAZE = { after: 5, lookUp: 20 };
+
 export const CAVEMAN_SKINS = {
   classic: { id: 'classic', name: 'Classic Grog', projectile: 'rock' },
   hunter: { id: 'hunter', name: 'Mammoth Hunter', projectile: 'snowball' },

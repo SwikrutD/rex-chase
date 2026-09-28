@@ -1,7 +1,7 @@
 // The game: state machine, spawning, collisions, roar, rival, events, camera.
 import * as THREE from 'three';
 import {
-  REX_X, CAMERA, SPECIES, SPECIES_ORDER, CAVEMAN, CAVEMAN_SKINS, CAVEMAN_ORDER, PTERO_EXTRA_SPEED, METEOR,
+  REX_X, CAMERA, BABY, STARGAZE, SPECIES, SPECIES_ORDER, CAVEMAN, CAVEMAN_SKINS, CAVEMAN_ORDER, PTERO_EXTRA_SPEED, METEOR,
   EXTINCTION_SCORE, BONE,
 } from './config.js';
 import { stepBody } from './logic/physics.js';
@@ -56,6 +56,11 @@ export class Game {
     this.deadBlend = 0;
     this.shake = 0;
     this.fovKick = 0;
+    this.gaze = 0; // stargazer easter egg: 0 = normal view, 1 = looking at the sky
+    this.pausedFor = 0;
+    this.baby = null;
+    this.babyHist = [];
+    this.babyPop = 1;
     this.r = null;
 
     this.buildDino();
@@ -165,6 +170,23 @@ export class Game {
     this.dino.group.position.set(REX_X, 0, 0);
     this.dino.setGolden(this.data.golden);
     this.scene.add(this.dino.group);
+    this.buildBaby();
+  }
+
+  /**
+   * Easter egg: a hatchling of the current species that trots alongside,
+   * copying the dino's moves a beat late. Purely cosmetic, with no hitbox.
+   */
+  buildBaby(pop = false) {
+    if (this.baby) { this.scene.remove(this.baby.group); this.baby.dispose(); this.baby = null; }
+    if (!this.data.baby) return;
+    this.baby = new Dino(this.data.species);
+    this.baby.group.position.set(REX_X + BABY.dx, 0, BABY.z);
+    this.baby.group.scale.setScalar(pop ? 0.01 : BABY.scale);
+    this.baby.setGolden(this.data.golden);
+    this.scene.add(this.baby.group);
+    this.babyHist = [];
+    this.babyPop = pop ? 0 : 1;
   }
 
   buildPreview() {
@@ -273,7 +295,7 @@ export class Game {
       body: { y: 0, vy: 0, onGround: true },
       nextSpawnAt: 18, milestone: 0, meter: 0, roarT: -1, chompT: -1,
       meteorIdx: 0, meteorUntil: -1, caveNext: CAVEMAN.first, kpg: false,
-      shown404: false, newBest: false, lastNight: false,
+      shown404: false, newBest: false, lastNight: false, catches: 0, bonesTaken: 0,
     };
     this.hud.setMeter(0, stats.bonesForRoar, true);
     if (this.preview) this.preview.exiting = true;
@@ -331,9 +353,24 @@ export class Game {
   }
 
   onEgg(name) {
+    if (name === 'egg' && this.state === 'title') {
+      this.data.baby = !this.data.baby;
+      this.buildBaby(true);
+      if (this.data.baby) {
+        this.particles.sparkle(new THREE.Vector3(REX_X + BABY.titleDx, 0.6, BABY.z), 0xfff0c0, 16);
+        sfx.pickup();
+        this.hud.toast("IT'S HATCHING", 'A little one will run with you now. Type it again to send them to bed.');
+        this.unlock('parent');
+      } else {
+        this.hud.toast('BEDTIME', 'The hatchling is taking a nap.');
+      }
+      this.save();
+    }
     if (name === 'konami' && this.state === 'title') {
+      this.input.cancelLast('left'); // the final A of the code should not change the dinosaur
       this.data.golden = !this.data.golden;
       this.dino.setGolden(this.data.golden);
+      if (this.baby) this.baby.setGolden(this.data.golden);
       this.hud.setGoldenName(this.data.species, this.data.golden);
       this.hud.toast(this.data.golden ? 'SOLID GOLD' : 'BACK TO NORMAL', this.data.golden ? 'Every species is golden now. Enter the code again to undo.' : '');
       sfx.achievement();
@@ -397,7 +434,7 @@ export class Game {
         }
       } else if (this.state === 'run') {
         if (a === 'pause' || a === 'blur') this.setState('paused');
-        else if (a === 'roar') this.tryRoar();
+        else if (a === 'roar' || a === 'right') this.tryRoar();
         else if (a === 'jump' || a === 'up' || a === 'tap') this.r.jumpQueued = true;
       } else if (this.state === 'paused') {
         if (a === 'pause' || a === 'jump' || a === 'start' || a === 'tap' || a === 'up') this.setState('run');
@@ -585,6 +622,8 @@ export class Game {
         this.particles.dustBurst(new THREE.Vector3(R.x, 0.2, RIVAL_Z), 16, 1.6);
         this.hud.toast('CHOMP!', `+${CAVEMAN.bonus} points. He'll be back.`);
         this.data.stats.catches++;
+        r.catches++;
+        if (r.catches >= 3) this.unlock('chomper');
         this.unlock('lunch');
         r.caveNext = r.score + CAVEMAN.gapMin + this.rng() * CAVEMAN.gapRand;
       }
@@ -641,6 +680,7 @@ export class Game {
     const ms = Math.floor(r.score / 100);
     if (ms > r.milestone) { r.milestone = ms; sfx.point(); this.hud.flashScore(); }
     if (r.score >= 1000) this.unlock('k1');
+    if (r.score >= 2000 && r.bonesTaken === 0) this.unlock('bonedry');
 
     // Day and night
     const night = isNight(r.score);
@@ -681,7 +721,8 @@ export class Game {
 
     // Move and collide
     const ducking = duckHeld && r.body.onGround;
-    const me = shrink(dinoBox(stats, REX_X, r.body.y, ducking), HIT_FORGIVE);
+    const raw = dinoBox(stats, REX_X, r.body.y, ducking);
+    const me = shrink(raw, HIT_FORGIVE);
     for (const o of this.obstacles) {
       if (o.flee) {
         o.flee.vy += 6 * dt;
@@ -710,9 +751,12 @@ export class Game {
         o.group.position.set(o.x, o.y, 0);
       }
       if (o.solid && overlaps(me, shrink(o, HIT_FORGIVE))) { this.die(); return; }
+      // Touched the unforgiving box but not the real one: a near miss.
+      if (o.solid && !o.grazed && overlaps(raw, o)) o.grazed = true;
       if (!o.passed && o.x + o.w < me.x) {
         o.passed = true;
         if (o.sign === '404') this.unlock('notfound');
+        if (o.grazed) this.unlock('shave');
       }
     }
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
@@ -732,7 +776,8 @@ export class Game {
         this.bones.splice(i, 1);
         if (r.meter < stats.bonesForRoar) {
           r.meter++;
-          if (r.meter === stats.bonesForRoar) { sfx.roarReady(); this.hud.toast('ROAR READY', 'Press R to clear the way.'); }
+          r.bonesTaken++;
+          if (r.meter === stats.bonesForRoar) { sfx.roarReady(); this.hud.toast('ROAR READY', 'Press R, D or the right arrow to clear the way.'); }
           else sfx.pickup();
         } else sfx.pickup();
         this.hud.setMeter(r.meter, stats.bonesForRoar, true);
@@ -775,8 +820,12 @@ export class Game {
     this.particles.update(worldDt, speed);
     for (const o of this.obstacles) if (o.anim) o.anim(worldDt);
     for (const b of this.bones) b.anim(worldDt);
-    if (paused) this.renderer.render(this.scene, this.camera);
-    if (paused) return requestAnimationFrame((n) => this.frame(n));
+    this.updateStargaze(dt);
+    if (paused) {
+      this.updateCamera(dt);
+      this.renderer.render(this.scene, this.camera);
+      return requestAnimationFrame((n) => this.frame(n));
+    }
 
     // Dino pose
     this.flailT = Math.max(0, this.flailT - dt);
@@ -794,6 +843,7 @@ export class Game {
     }
     this.dino.group.position.y = y;
     this.dino.update(dt, { mode, speed, roar: this.roarEnvelope(), flail: this.flailT > 0 ? 1 : 0 });
+    this.updateBaby(dt, mode, y, speed);
 
     // Title rival preview
     if (this.preview) {
@@ -816,6 +866,37 @@ export class Game {
     requestAnimationFrame((n) => this.frame(n));
   }
 
+  /** The hatchling copies the dino's pose from a few frames ago. */
+  updateBaby(dt, mode, y, speed) {
+    if (!this.baby) return;
+    this.babyHist.push({ mode, y });
+    while (this.babyHist.length > BABY.lag) this.babyHist.shift();
+    const h = this.babyHist[0];
+    const bmode = h.mode === 'dead' ? 'idle' : h.mode;
+    this.babyPop = Math.min(1, this.babyPop + dt * 2.5);
+    const pop = this.babyPop < 1 ? 1 + Math.sin(this.babyPop * Math.PI) * 0.35 : 1;
+    this.baby.group.scale.setScalar(BABY.scale * Math.min(1, this.babyPop * 1.5) * pop);
+    this.baby.group.position.x = REX_X + BABY.titleDx + (BABY.dx - BABY.titleDx) * smooth(this.camBlend);
+    this.baby.group.position.y = h.y * 0.85;
+    // Shorter legs take faster steps.
+    this.baby.update(dt, { mode: bmode, speed: speed / BABY.scale, roar: this.roarEnvelope() * 0.8, flail: this.flailT > 0 ? 1 : 0 });
+  }
+
+  /**
+   * Easter egg: stay paused at night and the camera tilts up to a
+   * constellation shaped like the game's own roaring rex.
+   */
+  updateStargaze(dt) {
+    const night = this.world.night > 0.8;
+    this.pausedFor = this.state === 'paused' && night ? this.pausedFor + dt : 0;
+    const target = this.pausedFor > STARGAZE.after ? 1 : 0;
+    this.gaze += (target - this.gaze) * Math.min(1, dt * (target ? 0.5 : 4));
+    if (this.gaze < 0.001) this.gaze = 0;
+    this.world.setConstellation(smooth((this.gaze - 0.45) / 0.55));
+    this.hud.setStargazing(this.gaze > 0.15);
+    if (this.gaze > 0.93) this.unlock('stargazer');
+  }
+
   updateCamera(dt) {
     const toGame = this.state === 'title' ? 0 : 1;
     this.camBlend += (toGame - this.camBlend) * Math.min(1, dt * 2.2);
@@ -831,6 +912,7 @@ export class Game {
     gPos.lerp(new THREE.Vector3(REX_X + 1, 4, this.gameDist * 0.55), this.deadBlend * 0.5);
 
     const look = tLook.lerp(gLook, k);
+    look.y += smooth(this.gaze) * STARGAZE.lookUp;
     const pos = tPos.lerp(gPos, k);
     this.shake *= Math.exp(-dt * 5);
     const s = (this.shake + this.world.shake) * (this.reduceMotion ? 0.2 : 1);

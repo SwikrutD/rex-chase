@@ -7,6 +7,9 @@ export const ACHIEVEMENTS = [
   { id: 'lunch', name: 'Lunch Break', desc: 'Catch the caveman.' },
   { id: 'meteor', name: 'Look Up', desc: 'Survive a whole meteor shower.' },
   { id: 'allthree', name: 'Paleontologist', desc: 'Score 500 with every species.' },
+  { id: 'shave', name: 'Close Shave', desc: 'Clear an obstacle by a hair.' },
+  { id: 'chomper', name: 'Serial Chomper', desc: 'Catch the caveman three times in one run.' },
+  { id: 'bonedry', name: 'Bone Dry', desc: 'Reach 2000 points without picking up a single bone.' },
   { id: 'kpg', name: 'K-Pg Survivor', desc: 'Outlive the dinosaurs.', secret: true },
   { id: 'konami', name: 'Solid Gold', desc: 'Enter a very old cheat code on the title screen.', secret: true },
   { id: 'retro', name: 'Pixel Purist', desc: 'On the title screen, type what you are right now.', secret: true },
@@ -15,11 +18,14 @@ export const ACHIEVEMENTS = [
   { id: 'nap', name: 'Nap Time', desc: 'Leave the title screen alone for a while.', secret: true },
   { id: 'router', name: 'Reconnected', desc: 'Roar at a pterodactyl carrying something important.', secret: true },
   { id: 'notfound', name: 'Not Found', desc: 'Clear the cactus nobody could find.', secret: true },
+  { id: 'parent', name: 'Proud Parent', desc: 'On the title screen, type what every dinosaur hatched from.', secret: true },
+  { id: 'stargazer', name: 'Stargazer', desc: 'Take a long break under the night sky.', secret: true },
 ];
 
 const SEQUENCES = {
   konami: ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'],
   offline: [...'offline'],
+  egg: [...'egg'],
 };
 
 export class EggDetector {

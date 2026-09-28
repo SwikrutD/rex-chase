@@ -84,6 +84,7 @@ export class Hud {
   }
 
   setNight(on) { document.body.classList.toggle('night', on); }
+  setStargazing(on) { this.el.pause.classList.toggle('gazing', on); }
   setRunning(on) { document.body.classList.toggle('running', on); }
   setRetro(on) { document.body.classList.toggle('retro', on); }
 
