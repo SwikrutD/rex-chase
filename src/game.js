@@ -777,7 +777,7 @@ export class Game {
         if (r.meter < stats.bonesForRoar) {
           r.meter++;
           r.bonesTaken++;
-          if (r.meter === stats.bonesForRoar) { sfx.roarReady(); this.hud.toast('ROAR READY', 'Press R, D or the right arrow to clear the way.'); }
+          if (r.meter === stats.bonesForRoar) { sfx.roarReady(); this.hud.toast('ROAR READY', 'Press D or the right arrow to clear the way.'); }
           else sfx.pickup();
         } else sfx.pickup();
         this.hud.setMeter(r.meter, stats.bonesForRoar, true);

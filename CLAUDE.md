@@ -33,7 +33,7 @@ src/
   game.js               state machine, spawning, collisions, roar, rival, events, camera
   input.js              keyboard and touch -> held state + queued actions. Arrows and WASD
                         mirror each other; right/D means "next dinosaur" on the title
-                        and "roar" during a run (as do R and Shift)
+                        and "roar" during a run (as does Shift; R is deliberately unbound)
   audio.js              WebAudio synth; every sound is generated in code
   storage.js            guarded localStorage (hi score, choices, trophies)
   eastereggs.js         achievement list and key-sequence detector
@@ -109,7 +109,7 @@ The dev server can also be screenshot-tested headless with Playwright. Software 
 - Pterodactyls appear after 300. Low ones must be jumped, mid ones ducked, and high ones cleared by running under.
 - The caveman appears at 500. He throws his skin's projectile (sandstone rock, snowball or coffee mug) back over his shoulder one to three times, and gives +250 when caught.
 - The meteor shower starts at 1500 with craters on the track and a red sky.
-- Collecting bones fills the meter, and R roars and shatters obstacles.
+- Collecting bones fills the meter, and D or the right arrow roars and shatters obstacles. R does nothing.
 - On death the dino topples with X eyes. Space restarts and Esc goes to the title.
 - P pauses, M mutes and H opens trophies. Switching tabs auto-pauses.
 - After a deploy: `npm run preview` or the live site loads, then reloads with the network off (the service worker serves it).
@@ -153,4 +153,4 @@ Other touches: the background fossil ribcage, the moon cycling through phases ea
 
 ## Key bindings and typed eggs
 
-Typed easter eggs (`offline`, `egg`) must only use letters with no action bound: W A S D R P M H T are taken on the title screen. The Konami code ends in A, which also means "previous dinosaur", so `onEgg('konami')` calls `input.cancelLast('left')`; key listeners run after the action is queued so that cancel works.
+Typed easter eggs (`offline`, `egg`) must only use letters with no action bound: W A S D P M H T are taken on the title screen. The Konami code ends in A, which also means "previous dinosaur", so `onEgg('konami')` calls `input.cancelLast('left')`; key listeners run after the action is queued so that cancel works.

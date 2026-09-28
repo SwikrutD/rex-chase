@@ -3,14 +3,14 @@
 
 // Arrows and WASD mirror each other. What an action does depends on the
 // screen: on the title, left/right pick the dinosaur and up/down the rival;
-// during a run, up jumps, down ducks and right roars (as do R and Shift).
+// during a run, up jumps, down ducks and right roars (as does Shift).
 const ACTIONS = {
   Space: 'jump',
   ArrowUp: 'up', KeyW: 'up',
   ArrowDown: 'duck', KeyS: 'duck',
   ArrowLeft: 'left', KeyA: 'left',
   ArrowRight: 'right', KeyD: 'right',
-  KeyR: 'roar', ShiftLeft: 'roar', ShiftRight: 'roar',
+  ShiftLeft: 'roar', ShiftRight: 'roar',
   KeyP: 'pause', Escape: 'pause',
   KeyM: 'mute',
   KeyH: 'trophies',

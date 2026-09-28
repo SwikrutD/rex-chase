@@ -13,7 +13,7 @@ Built with Three.js and Vite. Every model and sound is generated in code, and on
 | --- | --- |
 | Space, W or Up | Jump (hold for a higher jump) |
 | S or Down | Duck, or fast-fall in the air |
-| R, D or Right | Roar when the bone meter is full |
+| D or Right | Roar when the bone meter is full |
 | A/D or Left/Right | Choose a dinosaur on the title screen |
 | W/S or Up/Down | Choose the caveman's outfit on the title screen |
 | P or Esc | Pause |
