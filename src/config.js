@@ -66,8 +66,8 @@ export const PTERO_EXTRA_SPEED = 1.5;
 export const PTERO_Y = { low: 0.5, mid: 2.15, high: 3.75 };
 
 export const OBSTACLE = {
-  cactusS: { w: 0.8, h: 1.5, step: 0.95 },
-  cactusL: { w: 1.0, h: 2.3, step: 1.1 },
+  cactusS: { w: 0.95, h: 1.6, step: 0.95 },
+  cactusL: { w: 1.2, h: 2.4, step: 1.3 },
   ptero: { w: 2.0, h: 1.0 },
   crater: { w: 2.4, h: 0.35 },
   rock: { w: 0.7, h: 0.7 },

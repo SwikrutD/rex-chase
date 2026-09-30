@@ -4,7 +4,7 @@ import {
 } from '../config.js';
 import { airtime, timeAbove } from './physics.js';
 
-export const HIT_FORGIVE = 0.15;
+export const HIT_FORGIVE = 0.06;
 
 export function speedAt(distance) {
   return Math.min(SPEED.max, SPEED.start + distance * SPEED.perUnit);

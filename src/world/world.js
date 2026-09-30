@@ -11,8 +11,9 @@ const DAY = {
   ridgeNear: C(0xc0907c), ridgeFar: C(0xd8b0a0), cloud: C(0xffffff),
 };
 const NIGHT = {
-  skyTop: C(0x070b22), skyBottom: C(0x2b2550), fog: C(0x221e3c), ground: C(0x6a6286),
-  hemiSky: C(0x6d7fc4), hemiGround: C(0x221a2a), hemi: 0.6, sun: 1.0, sunColor: C(0xa8b8ff),
+  // Moonlit rather than pitch black, so the dino and obstacles stay easy to read.
+  skyTop: C(0x0a1030), skyBottom: C(0x352d5e), fog: C(0x2a2548), ground: C(0x9a92c4),
+  hemiSky: C(0x8494d8), hemiGround: C(0x3a3050), hemi: 1.0, sun: 1.5, sunColor: C(0xb4c2ff),
   ridgeNear: C(0x2d2744), ridgeFar: C(0x3b3459), cloud: C(0x4a4768),
 };
 const METEOR_TINT = { skyBottom: C(0xff6a3a), fog: C(0xc0583c), hemiSky: C(0xffa070) };
@@ -204,12 +205,22 @@ export class World {
     const edgeMat = mat(0x8a6a4a);
     this.edges = new THREE.InstancedMesh(edgeGeo, edgeMat, 240);
     const m4 = new THREE.Matrix4();
+    // Each pebble wraps on its own over a long span, so none ever snaps back in view.
+    this.edgeSpan = 240;
+    this.edgeData = [];
     for (let i = 0; i < 240; i++) {
       const side = i % 2 ? 1 : -1;
       const s = 0.7 + ((i * 37) % 10) / 12;
-      m4.compose(new THREE.Vector3(-120 + (i >> 1) * 2 + ((i * 13) % 7) * 0.12, 0.04, side * (1.7 + ((i * 7) % 5) * 0.06)), new THREE.Quaternion().setFromEuler(new THREE.Euler(i, i * 2, 0)), new THREE.Vector3(s, s * 0.6, s));
-      this.edges.setMatrixAt(i, m4);
+      this.edgeData.push({
+        x0: -120 + (i >> 1) * 2 + ((i * 13) % 7) * 0.12,
+        z: side * (1.7 + ((i * 7) % 5) * 0.06),
+        q: new THREE.Quaternion().setFromEuler(new THREE.Euler(i, i * 2, 0)),
+        s: new THREE.Vector3(s, s * 0.6, s),
+      });
     }
+    this.edgePos = new THREE.Vector3();
+    this.edgeM4 = m4;
+    this.placeEdges(0);
     this.edges.receiveShadow = true;
     scene.add(this.edges);
 
@@ -334,6 +345,17 @@ export class World {
     this.offlineSign = sign;
   }
 
+  placeEdges(distance) {
+    const span = this.edgeSpan;
+    const half = span / 2;
+    this.edgeData.forEach((e, i) => {
+      const x = ((((e.x0 - distance) % span) + span * 1.5) % span) - half;
+      this.edgeM4.compose(this.edgePos.set(x, 0.04, e.z), e.q, e.s);
+      this.edges.setMatrixAt(i, this.edgeM4);
+    });
+    this.edges.instanceMatrix.needsUpdate = true;
+  }
+
   setMoonPhase(i) {
     const p = i % PHASE_OFFSETS.length;
     if (p === this.moonPhase) return;
@@ -439,7 +461,7 @@ export class World {
     // Ground and decor
     this.groundTex.offset.x = (this.distance / 8) % 1;
     this.trackTex.offset.x = this.groundTex.offset.x;
-    this.edges.position.x = -(this.distance % 2);
+    this.placeEdges(this.distance);
     const half = this.decorSpan / 2;
     for (const d of this.decor) {
       d.obj.position.x = ((((d.x0 - this.distance) % this.decorSpan) + this.decorSpan * 1.5) % this.decorSpan) - half;

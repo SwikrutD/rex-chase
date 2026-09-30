@@ -120,7 +120,7 @@ export class Caveman {
       const ch = mesh(new THREE.IcosahedronGeometry(0.34, 0), clubM, 0, -1.1, 0);
       ch.scale.set(1, 1.45, 1);
       item.add(ch);
-      item.rotation.z = -1.7;
+      item.rotation.z = 1.7;
     } else if (skinId === 'hunter') {
       const shaft = mat(0x8a6a44);
       item.add(mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.0, 5), shaft, 0, -0.4, 0));
@@ -197,7 +197,7 @@ export class Caveman {
     } else {
       this.itemArm.rotation.z = Math.PI - 0.25 + 0.55 * Math.sin(q * 0.5) * run + 0.3 * Math.sin(t * 3) * (1 - run);
       this.itemArm.rotation.x = -0.25 + 0.2 * Math.sin(q * 0.5 + 1);
-      this.item.rotation.z = -1.7 + 0.6 * Math.sin(q * 0.5 + 0.8);
+      this.item.rotation.z = 1.7 - 0.6 * Math.sin(q * 0.5 + 0.8);
     }
     const th = s.throw || 0;
     // A throw winds up overhead and snaps back over his shoulder toward the dino.

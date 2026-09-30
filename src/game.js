@@ -732,12 +732,14 @@ export class Game {
     const raw = dinoBox(stats, REX_X, r.body.y, ducking);
     const me = shrink(raw, HIT_FORGIVE);
     for (const o of this.obstacles) {
+      let sweep = 0;
       if (o.flee) {
         o.flee.vy += 6 * dt;
         o.x += o.flee.vx * dt - r.speed * dt * 0.3;
         o.y += o.flee.vy * dt;
       } else {
-        o.x -= (r.speed + o.extra) * dt;
+        sweep = (r.speed + o.extra) * dt;
+        o.x -= sweep;
       }
       if (o.pending && (!this.rival || this.rival.mode !== 'run')) o.dead = true; // he was caught first
       if (o.flight) {
@@ -758,7 +760,9 @@ export class Game {
       } else {
         o.group.position.set(o.x, o.y, 0);
       }
-      if (o.solid && overlaps(me, shrink(o, HIT_FORGIVE))) { this.die(o.kind === 'proj' ? `thrown-${this.data.caveman}` : o.kind); return; }
+      // The box is stretched back over this frame's travel so a slow frame cannot tunnel through it.
+      const sweptBox = { x: o.x, y: o.y, w: o.w + sweep, h: o.h };
+      if (o.solid && overlaps(me, shrink(sweptBox, HIT_FORGIVE))) { this.die(o.kind === 'proj' ? `thrown-${this.data.caveman}` : o.kind); return; }
       // Touched the unforgiving box but not the real one: a near miss.
       if (o.solid && !o.grazed && overlaps(raw, o)) o.grazed = true;
       if (!o.passed && o.x + o.w < me.x) {
